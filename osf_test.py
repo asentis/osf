@@ -54,6 +54,32 @@ def p01(record):
     if record[24] == '0': #current pain
         eligible = 0
 
+    pain_loc_male = 0
+    pain_loc_female = 0
+    for i in range(27,99):
+        if record[7] == '1': #male
+            pain_loc_male += int(record[i])
+        else:
+            pain_loc_female += int(record[i+74])
+        #print(i, i+74, pain_loc_male, pain_loc_female)
+
+    #if sum of all pain locations are >0
+    if (record[7] == '1' and pain_loc_male > 0) or (record[7] == '2' and pain_loc_female > 0):
+        #if lower back not checked
+        if (int(record[78]) + int(record[79]) + int(record[152]) + int(record[153])) == 0:
+            #if pain disorder 3 not checked
+            if record[176] == '0':
+                #if other checkbox not checked
+                if record[180] =='0':
+                    print("if")
+                    eligible = 0
+                #else if othe checkbox check and "back" not in sentence
+                elif "back" not in record[181]: #doesn't have "back"
+                    print("elif", record[181])
+                    eligible = 0
+
+
+
     if record[173] == '1': #pain duration (not currently excluding intermittent)
         eligible = 0
 
