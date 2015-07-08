@@ -46,57 +46,66 @@ def p01(record):
     #print(age)
 
     if (age > 13 and age < 21) or (age > 65): #dob
+        print("age")
         eligible = 0
 
-    if record[23] == '2': #handedness (not currently excluding ambidextrous)
+    if record[26] == '2': #handedness (not currently excluding ambidextrous)
+        print("handedness")
         eligible = 0
 
-    if record[24] == '0': #current pain
+    if record[27] == '0': #current pain
+        print("current pain")
         eligible = 0
 
     pain_loc_male = 0
     pain_loc_female = 0
-    for i in range(27,99):
+    for i in range(28,102): #27,99
         if record[7] == '1': #male
             pain_loc_male += int(record[i])
         else:
             pain_loc_female += int(record[i+74])
-        #print(i, i+74, pain_loc_male, pain_loc_female)
+        print(i, i+74, pain_loc_male, pain_loc_female)
 
     #if sum of all pain locations are >0
     if (record[7] == '1' and pain_loc_male > 0) or (record[7] == '2' and pain_loc_female > 0):
         #if lower back not checked
-        if (int(record[78]) + int(record[79]) + int(record[152]) + int(record[153])) == 0:
+        if (int(record[81]) + int(record[82]) + int(record[155]) + int(record[156])) == 0:
             #if pain disorder 3 not checked
-            if record[176] == '0':
+            if record[179] == '0':
                 #if other checkbox not checked
-                if record[180] =='0':
-                    print("if")
+                if record[183] =='0':
+                    print("if - not low back pain")
                     eligible = 0
                 #else if othe checkbox check and "back" not in sentence
-                elif "back" not in record[181]: #doesn't have "back"
-                    print("elif", record[181])
+                elif "back" not in record[185]: #doesn't have "back"
+                    print("elif - 'back' not listed in other,", record[185])
                     eligible = 0
 
 
 
-    if record[173] == '1': #pain duration (not currently excluding intermittent)
+    if record[176] == '1': #pain duration (not currently excluding intermittent)
+        print("pain duration")
         eligible = 0
 
-    if record[175] == '1': #other pain disorder (FM)
+    if record[178] == '1': #other pain disorder (FM)
+        print("FM")
         eligible = 0
 
-    if record[177] == '1': #other pain disorder (CRPS)
+    if record[180] == '1': #other pain disorder (CRPS)
+        print("CRPS")
         eligible = 0
 
-    if record[178] == '1': #other pain disorder (PP)
+    if record[181] == '1': #other pain disorder (PP)
+        print("PP")
         eligible = 0
 
-    if record[179] == '1': #other pain disorder (Migraine)
+    if record[182] == '1': #other pain disorder (Migraine)
+        print("Migraine")
         eligible = 0
 
-    if record[184] != '':
-        if int(record[184]) < 4: #NRS
+    if record[188] != '':
+        if int(record[188]) < 4: #NRS
+            print("NRS")
             eligible = 0
 
     return eligible
