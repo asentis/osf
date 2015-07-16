@@ -40,7 +40,7 @@ def read_file(filename):
     csv_reader = csv.reader(f, delimiter=',')
     tempList = []
     for record in csv_reader:
-        print('record:', record)
+        #print('record:', record)
         tempList.append(record)
     #print('tempList:', tempList)
     f.close()
@@ -56,7 +56,7 @@ def read_meds(medications):
     medDict = {}
     for key, value in csv_reader:
         medDict[key] = value
-    print('medDict:', medDict)
+    #print('medDict:', medDict)
     f.close()
 
     return medDict
@@ -86,22 +86,23 @@ def p01(record, meds):
    # eligible = 1
     ineligible = []
 
-    dob = datetime.datetime.strptime(record[6], "%m/%d/%Y").date()
-    #print(dob)
-    today = datetime.date.today()
-    age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
-    #print("age =", today.year, "-", dob.year, "- ((",today.month,",", today.day,") < (",dob.month,",", dob.day,")))")
-    #print("=", today.year, "-", dob.year, "-", ((today.month, today.day) < (dob.month, dob.day)))
-    #print(age)
+    if record[6] != '':
+        dob = datetime.datetime.strptime(record[6], "%m/%d/%Y").date()
+        #print(dob)
+        today = datetime.date.today()
+        age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+        #print("age =", today.year, "-", dob.year, "- ((",today.month,",", today.day,") < (",dob.month,",", dob.day,")))")
+        #print("=", today.year, "-", dob.year, "-", ((today.month, today.day) < (dob.month, dob.day)))
+        #print(age)
 
-    if age > 13 and age < 21:
-        print("age")
-        #eligible = 0
-        ineligible.append("age < 21")
-    elif age > 65: #dob
-        print("age")
-        #eligible = 0
-        ineligible.append("age > 65")
+        if age > 13 and age < 21:
+            print("age")
+            #eligible = 0
+            ineligible.append("age < 21")
+        elif age > 65: #dob
+            print("age")
+            #eligible = 0
+            ineligible.append("age > 65")
 
     if record[26] == '2': #handedness (not currently excluding ambidextrous)
         print("left handed")
