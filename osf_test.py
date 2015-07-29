@@ -5,7 +5,7 @@ import csv
 import datetime
 import re
 
-# example usage python ./osf_test.py data_file medications_file
+# example usage python ./osf_test.py data_file ineligiblity_file
 
 
 def main():
@@ -17,10 +17,12 @@ def main():
 
     if params != []:
         filename = params[0]
-        medications = params[1]
-        print(filename, medications)
+        reasons = params[1]
+        medications = params[2]
+        print(filename, reasons, medications)
 
         recordList = read_file(filename)
+        ineligibilityList = read_ineligibility(reasons)
         medDict = read_meds(medications)
 
         check_eligibility(recordList, medDict)
@@ -48,9 +50,23 @@ def read_file(filename):
     return tempList
 
 
+def read_ineligibility(reasons):
+
+    print('read_ineligibility module:', reasons)
+    f = open(reasons, 'r')
+    csv_reader = csv.reader(f, delimiter=',')
+    ineligibilityList = []
+    for reason in csv_reader:
+        ineligibilityList += reason
+    print('ineligibilityList:', ineligibilityList)
+    f.close()
+
+    return ineligibilityList
+
+
 def read_meds(medications):
 
-    print('read_file module:', medications)
+    print('read_meds module:', medications)
     f = open(medications, 'r')
     csv_reader = csv.reader(f, delimiter=',')
     medDict = {}
@@ -76,10 +92,13 @@ def check_eligibility(records, meds):
             tracking['ineligible'] += 1
             print(ineligible)
             print("record", record[0], "- ineligible")
+            # call to mark as ineligible function here - update admin panel, "phone screened by" section with 'program' and current date/time\
+            #update_record(ineligible)
         else:
             tracking['eligible'] += 1
             print("record", record[0], "- looks eligible -> phone screen")
     print(tracking)
+
 
 def p01(record, meds):
 
@@ -99,20 +118,25 @@ def p01(record, meds):
             print("age")
             #eligible = 0
             ineligible.append("age < 21")
+            # call to mark as ineligible function here - update phone screen
+
         elif age > 65: #dob
             print("age")
             #eligible = 0
             ineligible.append("age > 65")
+           # call to mark as ineligible function here - update phone screen
 
     if record[26] == '2': #handedness (not currently excluding ambidextrous)
         print("left handed")
         #eligible = 0
         ineligible.append("left handed")
+       # call to mark as ineligible function here - update phone screen
 
     if record[27] == '0': #current pain -- SHOULD WE BE HOLDING THIS RATHER THAN MAKING INELIGIBLE?
         print("healthy volunteer")
         #eligible = 0
         ineligible.append("healthy volunteer")
+       # call to mark as ineligible function here - update phone screen
 
     pain_loc_male = 0
     pain_loc_female = 0
@@ -134,37 +158,44 @@ def p01(record, meds):
                     print("if - not low back pain")
                     #eligible = 0
                     ineligible.append("not low back pain")
+                    # call to mark as ineligible function here - update phone screen
                 #else if othe checkbox check and "back" not in sentence
                 elif "back" not in record[185]: #doesn't have "back"
                     print("elif - 'back' not listed in other,", record[185])
                     #eligible = 0
                     ineligible.append("not low back pain")
+                   # call to mark as ineligible function here - update phone screen
 
 
     if record[176] == '1': #pain duration (not currently excluding intermittent)
         print("pain duration")
         #eligible = 0
         ineligible.append("pain < 3 months")
+       # call to mark as ineligible function here - update phone screen
 
     if record[178] == '1': #other pain disorder (FM)
         print("FM")
         #eligible = 0
         ineligible.append("other pain condition - FM")
+       # call to mark as ineligible function here - update phone screen
 
     if record[180] == '1': #other pain disorder (CRPS)
         print("CRPS")
         #eligible = 0
         ineligible.append("other pain condition - CRPS")
+       # call to mark as ineligible function here - update phone screen
 
     if record[181] == '1': #other pain disorder (PP)
         print("PP")
         #eligible = 0
         ineligible.append("other pain condition - PP")
+       # call to mark as ineligible function here - update phone screen
 
     if record[182] == '1': #other pain disorder (Migraine)
         print("Migraine")
         #eligible = 0
         ineligible.append("other pain condition - migraine")
+       # call to mark as ineligible function here - update phone screen
 
     if record[188] != '':
         if int(record[188]) < 4: #NRS
@@ -177,6 +208,7 @@ def p01(record, meds):
         if med_ineligible != []:
             print("Medications")
             ineligible.extend(med_ineligible)
+           # call to mark as ineligible function here - update phone screen
 
 
     return ineligible
@@ -198,6 +230,10 @@ def check_meds(record, meds):
     return ineligible
 
 
+#def update_record(ineglible):
+
+   # for reason in ineligible:
+      #  if reason
 
 
 
