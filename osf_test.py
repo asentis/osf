@@ -25,7 +25,10 @@ def main():
         ineligibilityDict = read_to_dict(reasons)
         medDict = read_to_dict(medications)
 
-        check_eligibility(recordList, medDict)
+        newRecordList = check_eligibility(recordList, ineligibilityDict, medDict)
+
+        #print("new record list:", newRecordList)
+        write_file(newRecordList)
 
     else:
         #filename = ''
@@ -80,26 +83,37 @@ def read_to_dict(filename):
     return newDict
 
 
-def check_eligibility(records, meds):
+def check_eligibility(records, ineligibilityDict, meds):
 
     #record_test = records[0]
     tracking = {}
     tracking['ineligible'] = 0
     tracking['eligible'] = 0
 
+    newRecordList = []
+
     for record in records:
+
+        newRecord = []
+        #print("record:", record)
         #if p01(record) == 0:
         ineligible = p01(record, meds)
         if ineligible != []:
             tracking['ineligible'] += 1
             print(ineligible)
             print("record", record[0], "- ineligible")
-            # call to mark as ineligible function here - update admin panel, "phone screened by" section with 'program' and current date/time\
+            newRecord = update_phone_screen(record, ineligible, ineligibilityDict)
+            # call to mark as ineligible function here - update admin panel?, "phone screened by" section with 'program' and current date/time\
             #update_record(ineligible)
         else:
             tracking['eligible'] += 1
             print("record", record[0], "- looks eligible -> phone screen")
+            newRecord = record
+        print("newRecord:", newRecord)
+        newRecordList.append(newRecord)
     print(tracking)
+
+    return newRecordList
 
 
 def p01(record, meds):
@@ -131,7 +145,7 @@ def p01(record, meds):
     if record[26] == '2': #handedness (not currently excluding ambidextrous)
         print("left handed")
         #eligible = 0
-        ineligible.append("Left-handed")
+        ineligible.append("MRI: Left-handed")
        # call to mark as ineligible function here - update phone screen
 
     if record[27] == '0': #current pain -- SHOULD WE BE HOLDING THIS RATHER THAN MAKING INELIGIBLE?
@@ -190,7 +204,8 @@ def p01(record, meds):
     if record[181] == '1': #other pain disorder (PP)
         print("PP")
         #eligible = 0
-        ineligible.append("Other Pain Condition: PP")
+        #ineligible.append("Other Pain Condition: PP")
+        ineligible.append("Other Pain: Pelvic")
        # call to mark as ineligible function here - update phone screen --> Other pain: pelvic? (no other pain condition: PP option)
 
     if record[182] == '1': #other pain disorder (Migraine)
@@ -201,7 +216,7 @@ def p01(record, meds):
 
     if record[188] != '': #NRS
         nrs = record[188]
-        if int(nrs) < 4:
+        if (int(nrs) < 4) and (int(nrs) > 0):
             print("NRS")
             #eligible = 0
             ineligible.append("NRS: " + nrs)
@@ -227,18 +242,50 @@ def check_meds(record, meds):
 
         for i in med_list:
             if i in meds.keys():
-                reason = i + " - " + meds[i]
-                ineligible.append(reason)
+                #reason = i + " - " + meds[i]
+                #ineligible.append(reason)
+                ineligible.append(meds[i])
         #print("Medications:", ineligible)
 
     return ineligible
 
 
-#def update_record(ineglible):
+def update_phone_screen(record, ineligible, ineligibilityDict):
 
-   # for reason in ineligible:
-      #  if reason
+    record[215] = 0 # mark admin panel as appropriate for research
+    record[225] = 2 # mark admin panel as complete
 
+    record[241] = 'Automatic screen program ' + str(datetime.datetime.now())
+    record[534] = 2 # mark phone screen as failure
+    record[619] = 2 # mark phone screen as complete
+
+    for reason in ineligible: # update failure reasons
+        i = int(ineligibilityDict[reason])
+        #print("error:", i)
+        record[i] = 1
+        # NOTE: not currently including list of medications provided in OSF (could put this in eligibility notes)
+
+    return record
+    # write and save to a new csv file
+
+
+def write_file(records):
+
+    '''
+    output_filename = '../../../Desktop/UpdatedRecords.csv'
+    f = open(output_filename, 'w')
+
+    csv_writer = csv.writer(f, delimiter=',')
+    for record in records:
+        csv_writer.writerows(record)
+
+
+    f.close()
+    '''
+
+    with open('../../../Desktop/output.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerows(records)
 
 
 if __name__ == '__main__':
