@@ -21,13 +21,12 @@ def main():
         
         reasons = params[0]
         medications = params[1]
-        #print(reasons, medications)
         
         api_url = 'https://redcap-demo.stanford.edu/api/'
         api_key = 'B2586BF6214D752F17ADF208244EFAE4'
         project = Project(api_url, api_key)
         record = export_record(project)
-        print("finished with record export module")
+        #print("finished with record export module")
         #print(record)
         #print("sorted", sorted(record.keys()))
         ineligibilityDict = read_to_dict(reasons)
@@ -51,7 +50,7 @@ def export_record(project):
 	
     project = Project(api_url, api_key)
     '''
-    print("FORMS:", project.forms)
+    #print("FORMS:", project.forms)
     forms_subset = ['online_screening_form', 'p01_cam_center_phone_screen']
     #forms = project.forms[0]
     #forms_subset = project.export_records(forms=forms)
@@ -78,11 +77,11 @@ def read_to_dict(filename):
 
 def check_eligibility(record, ineligibilityDict, meds):
 
-    ineligible = p01(record, meds)
+    ineligible, problem_meds = p01(record, meds)
     if ineligible != []:
         print(ineligible)
         print("record", record['record_id'], "- ineligible")
-        newRecord = update_phone_screen(record, ineligible, ineligibilityDict)
+        newRecord = update_phone_screen(record, ineligible, ineligibilityDict, problem_meds)
     else:
         print("record", record['record_id'], "- looks eligible -> phone screen")
         newRecord = record
@@ -237,14 +236,14 @@ def p01(record, meds):
            # call to mark as ineligible function here - update phone screen
 
     if record['medication_list'] != '':
-        med_ineligible = check_meds(record['medication_list'], meds)
+        med_ineligible, problem_meds = check_meds(record['medication_list'], meds)
         if med_ineligible != []:
             print("Medications")
             ineligible.extend(med_ineligible)
            # call to mark as ineligible function here - update phone screen
 
 
-    return ineligible
+    return ineligible, problem_meds
 
 
 def check_meds(record_meds, meds):
@@ -253,7 +252,8 @@ def check_meds(record_meds, meds):
     #if record[190] != '':
     #extract medications as a list?
     med_list = re.split(r'[,.\s]\s*', record_meds)
-    print("med list", med_list)
+    #print("med list", med_list)
+    problem_meds = []
 
     for i in med_list:
         #print("listed med", i)
@@ -264,24 +264,24 @@ def check_meds(record_meds, meds):
             #ineligible.append(reason)
             #print("problem med", i)
             ineligible.append(meds[i])
+            problem_meds.append(i)
     #print("Medications:", ineligible)
+    
+    return ineligible, problem_meds
 
-    return ineligible
 
-
-def update_phone_screen(record, ineligible, ineligibilityDict):
+def update_phone_screen(record, ineligible, ineligibilityDict, problem_meds):
 
     #record['admin_ra_exclude'] = 0 # mark admin panel as appropriate for research
     
 	### CAN THE BELOW BE DONE WITH A DICT EXPORT?????
 	#record[225] = 2 # mark admin panel as complete
 
-    #record['cmtps_date'] = str(datetime.datetime.now())
+    #record['cmtps_date'] = str(datetime.datetime.now()) #raises error
     record['cmtps_conductedby'] = 'Automatic screen program'
     record['cmtps_eligstatus'] = 2 # mark phone screen as failure
     
 	
-	### CAN THE BELOW BE DONE WITH A DICT EXPORT?????
     record['p01_cam_center_phone_screen_complete'] = 2 # mark phone screen as complete
 
 	#### CHECK NEW LOGIC BELOW
@@ -292,17 +292,15 @@ def update_phone_screen(record, ineligible, ineligibilityDict):
         record[key] = 1
         # NOTE: not currently including list of medications provided in OSF (could put this in eligibility notes)
 
+    if problem_meds != []:
+        med_string = ''
+        for med in problem_meds:
+            med_string += (med + " ")
+        #print("med_string", med_string)
+        record['cmtps_eligstatusnotes'] = med_string
+
     return record
-    # write and save to a new csv file
 
-'''
-def write_file(records):
-
-    with open('../../../Desktop/output.csv', 'w', newline='') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerows(records)
-
-'''
 
 def import_record(record, project):
     #forms_subset = ['online_screening_form', 'p01_cam_center_phone_screen']
