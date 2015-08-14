@@ -272,10 +272,10 @@ def check_meds(record_meds, meds):
 
 def update_phone_screen(record, ineligible, ineligibilityDict, problem_meds):
 
-    #record['admin_ra_exclude'] = 0 # mark admin panel as appropriate for research
+    record['admin_relevantstudies___6'] = 1 # mark admin panel as considered for P01
+    record['admin_ra_exclude'] = 0 # mark admin panel as appropriate for research
     
-	### CAN THE BELOW BE DONE WITH A DICT EXPORT?????
-	#record[225] = 2 # mark admin panel as complete
+    record['admin_panel_complete'] = 2 # mark admin panel as complete
 
     #record['cmtps_date'] = str(datetime.datetime.now()) #raises error
     record['cmtps_conductedby'] = 'Automatic screen program'
