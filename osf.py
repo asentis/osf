@@ -23,7 +23,7 @@ def main():
         medications = params[1]
         
         api_url = 'https://redcap-demo.stanford.edu/api/'
-        api_key = 'B2586BF6214D752F17ADF208244EFAE4'
+        api_key = 'your key here'
         project = Project(api_url, api_key)
         record = export_record(project)
         #print("finished with record export module")
