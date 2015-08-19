@@ -19,36 +19,60 @@ def main():
 
     if params != []:
         
-        reasons = params[0]
-        medications = params[1]
+        reasons_file = params[0]
+        medications_file = params[1]
+        records_file = params[2]
         
-        api_url = 'https://redcap-demo.stanford.edu/api/'
+        recordsList = read_file(records_file)
+        
+        #api_url = 'https://redcap-demo.stanford.edu/api/'
+        #api_key = 'your key here'
+        
+        api_url = 'https://redcap.stanford.edu/api/'
         api_key = 'your key here'
         project = Project(api_url, api_key)
-        record = export_record(project)
+        records = export_record(project, recordsList)
         #print(record)
         #print("sorted", sorted(record.keys()))
-        ineligibilityDict = read_to_dict(reasons)
-        medDict = read_to_dict(medications)
+        
+        ineligibilityDict = read_to_dict(reasons_file)
+        medDict = read_to_dict(medications_file)
+        
 
-        newRecord = check_eligibility(record, ineligibilityDict, medDict)
-        import_record(newRecord, project)
+        newRecords = check_eligibility(records, ineligibilityDict, medDict)
+        import_record(newRecords, project)
 
     else:
         #filename = ''
         print('No file specified')
 
+       
+def read_file(filename):
+    
+    print('read_file module:', filename)
+    f = open(filename, 'r')
+    csv_reader = csv.reader(f, delimiter=',')
+    recordList = []
+    for record in csv_reader:
+        #print('record:', record)
+        recordList.append(record[0])
+    print('recordList:', recordList)
+    f.close()
 
-def export_record(project):
+    return recordList
+
+    
+def export_record(project, recordsList):
     
     #print("FORMS:", project.forms)
+    #id = ['2', '3', '9']
     forms_subset = ['online_screening_form', 'p01_cam_center_phone_screen']
-    record = project.export_records(forms=forms_subset)
+    records = project.export_records(records=recordsList, forms=forms_subset)
     #print("record exported, # of keys:", len(record[0].keys()))
 	
-    return record[-1] # return dict of single record (last record)
-
-
+    return records # return dict of single record (last record)
+    
+    
 def read_to_dict(filename):
 
     f = open(filename, 'r')
@@ -62,23 +86,29 @@ def read_to_dict(filename):
     return newDict
 
 
-def check_eligibility(record, ineligibilityDict, meds):
+def check_eligibility(records, ineligibilityDict, meds):
 
-    ineligible, hold, problem_meds = p01(record, meds)
-    if ineligible != []:
-        print(ineligible)
-        print("record", record['record_id'], "- ineligible")
-        newRecord = update_ps_inelig(record, ineligible, ineligibilityDict, problem_meds)
-    elif hold != []:
-        print(hold)
-        print("record", record['record_id'], "- on hold")
-        newRecord = update_ps_hold(record, hold)
-    else:
-        print("record", record['record_id'], "- looks eligible -> phone screen")
-        #newRecord = record
-        newRecord = update_ps_elig(record)
+    newRecordList = []
+    
+    for record in records:
+    
+        ineligible, hold, problem_meds = p01(record, meds)
+        if ineligible != []:
+            print(ineligible)
+            print("record", record['record_id'], "- ineligible")
+            newRecord = update_ps_inelig(record, ineligible, ineligibilityDict, problem_meds)
+        elif hold != []:
+            print(hold)
+            print("record", record['record_id'], "- on hold")
+            newRecord = update_ps_hold(record, hold)
+        else:
+            print("record", record['record_id'], "- looks eligible -> phone screen")
+            #newRecord = record
+            newRecord = update_ps_elig(record)
+        
+        newRecordList.append(newRecord)
 
-    return newRecord
+    return newRecordList
 
 
 def p01(record, meds):
@@ -102,7 +132,7 @@ def p01(record, meds):
     
     if record['gender'] == '3' or record['gender'] == '4':
         #print("Gender")
-        ineligible.append("Gender Ambiguity")
+        ineligible.append("Gender Variant")
     else:
         pain_loc_male = 0
         pain_loc_female = 0
@@ -200,16 +230,18 @@ def p01(record, meds):
 
     hold = []
 
-    if record['handedness'] == '2': #handedness (not currently excluding ambidextrous)
+    if record['handedness'] == '2': #handedness 
         #print("left handed")
         hold.append("Left-Handed")
+    elif record['handedness'] == '3':
+        hold.append("Ambidextrous")
 
     if record['currentpain'] == '0': #current pain
         #print("healthy volunteer")
         hold.append("Healthy Control")
     
     if record['painduration'] == '1': #pain < 3 months
-        print("pain duration")
+        #print("pain duration")
         hold.append("Pain < 3 months")
     
 	
@@ -266,15 +298,19 @@ def update_ps_hold(record, hold):
     record['admin_ra_exclude'] = 0 # mark admin panel as appropriate for research
     record['admin_panel_complete'] = 2 # mark admin panel as complete
 
+    record['cmtps_conductedby'] = 'Automatic screen program'
     record['cmtps_eligstatus'] = 3 # mark phone screen as hold
     record['p01_cam_center_phone_screen_complete'] = 2 # mark phone screen as complete
 
-    if "Healthy Control" in hold:
-        record['cmtps_holdreason___0'] = 1 
     if "Pain < 3 months" in hold:
+        record['cmtps_holdreason___0'] = 1 
+    if "Healthy Control" in hold:
         record['cmtps_holdreason___1'] = 1 
     if "Left-Handed" in hold:
         record['cmtps_holdreason___2'] = 1 
+    if "Ambidextrous" in hold:
+        record['cmtps_holdreason___8'] = 1
+        record['cmtps_holdother'] = "ambidextrous"
         
     return record
     
@@ -287,12 +323,13 @@ def update_ps_elig(record):
     return record
     
 
-def import_record(record, project):
+def import_record(records, project):
 
-    to_import = []
-    to_import.append(record)
-    response = project.import_records(to_import)
-    #print("response", response)
+    #to_import = []
+    #to_import.append(records)
+    #response = project.import_records(to_import)
+    response = project.import_records(records)
+    print("response", response)
     return response
 
 
