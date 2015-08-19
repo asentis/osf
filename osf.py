@@ -156,7 +156,7 @@ def p01(record, meds):
                             print("elif", word)
                             ineligible.append("Not Low Back Pain")
  
-    if record['painduration'] == '1' or record['painduration'] == '5': #pain duration (not currently excluding intermittent)
+    if record['painduration'] == '5': #intermittent pain duration
         #print("not chronic pain")
         ineligible.append("No Chronic Pain")
     
@@ -207,6 +207,10 @@ def p01(record, meds):
     if record['currentpain'] == '0': #current pain
         #print("healthy volunteer")
         hold.append("Healthy Control")
+    
+    if record['painduration'] == '1': #pain < 3 months
+        print("pain duration")
+        hold.append("Pain < 3 months")
     
 	
     return ineligible, hold, problem_meds
@@ -266,6 +270,8 @@ def update_ps_hold(record, hold):
     record['p01_cam_center_phone_screen_complete'] = 2 # mark phone screen as complete
 
     if "Healthy Control" in hold:
+        record['cmtps_holdreason___0'] = 1 
+    if "Pain < 3 months" in hold:
         record['cmtps_holdreason___1'] = 1 
     if "Left-Handed" in hold:
         record['cmtps_holdreason___2'] = 1 
