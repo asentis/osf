@@ -7,7 +7,7 @@ import re
 from redcap import Project
 
 # example usage: python ./osf.py ineligiblity_file medications_file
-# usage in osf directory: python ./osf.py ../../../Desktop/P01_IneligibilityReasons2.csv ../../../Desktop/P01_Medications.csv
+# usage in osf directory: python ./osf.py ../../../Desktop/P01_IneligibilityReasons2.csv ../../../Desktop/P01_Medications.csv ../../../Desktop/RecordIDs2.csv
 
 
 def main():
@@ -33,13 +33,14 @@ def main():
         project = Project(api_url, api_key)
         records = export_record(project, recordsList)
         #print(record)
-        #print("sorted", sorted(record.keys()))
+        #print("sorted", sorted(records[0].keys()))
         
         ineligibilityDict = read_to_dict(reasons_file)
         medDict = read_to_dict(medications_file)
         
 
         newRecords = check_eligibility(records, ineligibilityDict, medDict)
+        #print("sorted newRecords", sorted(newRecords[0].keys()))
         import_record(newRecords, project)
 
     else:
@@ -89,27 +90,62 @@ def read_to_dict(filename):
 def check_eligibility(records, ineligibilityDict, meds):
 
     newRecordList = []
+    num_inelig = 0
+    num_hold = 0
+    num_elig = 0
     
     for record in records:
-    
+        
+        #record = check_data(record)
+        
         ineligible, hold, problem_meds = p01(record, meds)
         if ineligible != []:
             print(ineligible)
             print("record", record['record_id'], "- ineligible")
             newRecord = update_ps_inelig(record, ineligible, ineligibilityDict, problem_meds)
+            num_inelig += 1
         elif hold != []:
             print(hold)
             print("record", record['record_id'], "- on hold")
             newRecord = update_ps_hold(record, hold)
+            num_hold += 1
         else:
             print("record", record['record_id'], "- looks eligible -> phone screen")
             #newRecord = record
             newRecord = update_ps_elig(record)
+            num_elig += 1
         
         newRecordList.append(newRecord)
-
+    
+    print("ineligible: ", num_inelig, "hold: ", num_hold, "eligible: ", num_elig)
     return newRecordList
 
+'''
+def check_data(record):
+
+    digits = len(record['contact_phone'])
+    if digits > 10:
+        if digits == 11 and record['contact_phone'][0] == '1':
+            print("phone", record['contact_phone'])
+            new_phone = record['contact_phone'][1:]
+            print("new phone", new_phone)
+            record['contact_phone'] = new_phone
+        else:
+            print("phone", record['contact_phone'])
+            new_phone = record['contact_phone'][-10:]
+            print("new phone", new_phone)
+            record['contact_phone'] = new_phone
+    elif digits < 10:
+        print("phone", record['contact_phone'])
+        padding = ''
+        for i in range(0,10-digits):
+            padding += '0'
+        new_phone = record['contact_phone'] + padding
+        print("new phone", new_phone)
+        record['contact_phone'] = new_phone
+    
+    return record
+'''
 
 def p01(record, meds):
 
@@ -181,10 +217,16 @@ def p01(record, meds):
                     ineligible.append("Not Low Back Pain")
                 #else if other checkbox checked and "back" not in sentence
                 else:
-                    for word in ['back', 'spine', 'disc']:
+                    count = 0
+                    words_to_check = ['back', 'spine', 'disc']
+                    for word in words_to_check:
                         if word not in record['paindisorder_other']:
-                            print("elif", word)
-                            ineligible.append("Not Low Back Pain")
+                            count += 1
+                            #print("elif: doesn't contain ", word)
+                    #print("count: ", count)
+                    if count == len(words_to_check):
+                        #print("other check box")
+                        ineligible.append("Not Low Back Pain")
  
     if record['painduration'] == '5': #intermittent pain duration
         #print("not chronic pain")
@@ -225,7 +267,7 @@ def p01(record, meds):
             ineligible.extend(med_ineligible)
 
     if record['pregnancy'] == 1: #pregnant/breastfeeding
-        print("pregnant/breastfeeding")
+        #print("pregnant/breastfeeding")
         ineligible.append("MRI: Currently pregnant or breastfeeding")
 
     hold = []
@@ -252,17 +294,17 @@ def check_meds(record_meds, meds):
 
     ineligible = []
     med_list = re.split(r'[,.\s]\s*', record_meds)
-    #print("med list", med_list)
+    print("med list", med_list)
     problem_meds = []
 
     for i in med_list:
-        #print("listed med", i)
+        print("listed med", i)
         i = i.lower()
         if i in meds.keys():
-            #print("problem med", i)
+            print("problem med", i)
             ineligible.append(meds[i])
             problem_meds.append(i)
-    #print("Medications:", ineligible)
+    print("Medications:", ineligible)
     
     return ineligible, problem_meds
 
