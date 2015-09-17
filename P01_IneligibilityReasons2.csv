@@ -1,0 +1,65 @@
+Gender Variant,0
+Age < 21 years old,1
+Age > 65 years old,2
+Healthy Control,3
+Medication: Benzodiazepine,4
+Medication: >60mg,5
+Medication: Anti-convulsant,6
+Medication: Anti-psychotic,7
+Medication: Beta-blocker,8
+Medication: Diabetes Medication,9
+Medication: Methadone Maintenance,10
+Medication: SNRI,11
+Medication: TCA,12
+Medication: Unstable Opioid Use,13
+MRI: BMI,14
+MRI: Claustrophobic,15
+MRI: Currently pregnant or breastfeeding,16
+MRI: Face tattoo,17
+MRI: Left-handed,18
+MRI: Metallic Implant,19
+MRI: Pacemaker,20
+MRI: Previous head trauma,21
+MRI: Seizure,22
+No Chronic Pain,23
+Not Interested,24
+Not Interested: Distance,25
+Not Interested: Low Compensation,26
+Not Interested: MRI scan too long,27
+Not Interested: Time Commitment,28
+Not Low Back Pain,29
+Not Resesarch Appropriate,30
+NRS: 1,31
+NRS: 2,32
+NRS: 3,33
+Other Medical Condition: Autoimmune,34
+Other Medical Condition: COPD,35
+Other Medical Condition: Costochondritis,36
+Other Medical Condition: Diabetes,37
+Other Medical Condition: NOS,38
+Other Medical Condition: Sjogrens Syndrome,39
+Other Pain Condition: CRPS,40
+Other Pain Condition: FM,41
+Other Pain Condition: Migraines,42
+Other Pain Condition: Rheumatoid Arthritis,43
+Other Pain Condition: Whole Body Neuropathy,44
+Other Pain: Knee,45
+Other Pain: Arm,46
+Other Pain: Facial,47
+Other Pain: Foot,48
+Other Pain: Hip,49
+Other Pain: Leg,50
+Other Pain: Middle Back,51
+Other Pain: Neck,52
+Other Pain: Pelvic,53
+Other Pain: Recent Surgery,54
+Other Pain: Shoulder,55
+Other Pain: Thalamic,56
+Other Pain: Upper Back,57
+Psychological Disorder,58
+Radicular Symptoms,59
+Other,60
+Previous CBT,61
+Previous MBSR,62
+Previous Acupuncture,63
+Previous Meditation,64
