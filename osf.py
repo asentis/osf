@@ -7,7 +7,7 @@ import re
 from redcap import Project
 
 # example usage: python ./osf.py ineligiblity_file medications_file
-# usage in osf directory: python ./osf.py ../../../Desktop/P01_IneligibilityReasons2.csv ../../../Desktop/P01_Medications.csv ../../../Desktop/RecordIDs2.csv
+# usage in osf directory: python ./osf.py ../../../Desktop/P01_IneligibilityReasons2.csv ../../../Desktop/P01_Medications.csv ../../../Desktop/RecordIDs.csv
 
 
 def main():
@@ -232,6 +232,7 @@ def p01(record, meds):
         #print("not chronic pain")
         ineligible.append("No Chronic Pain")
     
+    ''' %removing ineligibility based on other pain conditions as of 10/27/2015
     if record['paindisorder___1'] == '1': #recent surgery
         #print("recent surgery")
         ineligible.append("Other Pain: Recent Surgery")
@@ -252,7 +253,8 @@ def p01(record, meds):
     if record['paindisorder___6'] == '1': #other pain disorder (Migraine)
         #print("Migraine")
         ineligible.append("Other Pain Condition: Migraines")
-
+    '''
+    
     if record['painscore_avg'] != '': #NRS
         nrs = record['painscore_avg']
         if (int(nrs) < 4) and (int(nrs) > 0):
@@ -293,7 +295,7 @@ def p01(record, meds):
 def check_meds(record_meds, meds):
 
     ineligible = []
-    med_list = re.split(r'[,.\s]\s*', record_meds)
+    med_list = re.split(r'[;,.\s]\s*', record_meds)
     print("med list", med_list)
     problem_meds = []
 
