@@ -26,10 +26,10 @@ def main():
         recordsList = read_file(records_file)
         
         #api_url = 'https://redcap-demo.stanford.edu/api/'
-        #api_key = 'your key here'
+        #api_key = 'key here'
         
         api_url = 'https://redcap.stanford.edu/api/'
-        api_key = 'your key here'
+        api_key = 'key here'
         project = Project(api_url, api_key)
         records = export_record(project, recordsList)
         #print(record)
@@ -67,7 +67,10 @@ def export_record(project, recordsList):
     
     #print("FORMS:", project.forms)
     #id = ['2', '3', '9']
-    forms_subset = ['online_screening_form', 'p01_cam_center_phone_screen']
+    
+    #forms_subset = ['online_screening_form', 'p01_cam_center_phone_screen']
+    forms_subset = ['online_screening_form', 'cbp_phone_screen']
+    
     records = project.export_records(records=recordsList, forms=forms_subset)
     #print("record exported, # of keys:", len(record[0].keys()))
 	
@@ -318,9 +321,11 @@ def update_ps_inelig(record, ineligible, ineligibilityDict, problem_meds):
     record['admin_panel_complete'] = 2 # mark admin panel as complete
 
     #record['cmtps_date'] = str(datetime.datetime.now()) #raises error
-    record['cmtps_conductedby'] = 'Automatic screen program'
+    record['cmtps_conductedby'] = 'Automatic screen program 1'
     record['cmtps_eligstatus'] = 2 # mark phone screen as failure
-    record['p01_cam_center_phone_screen_complete'] = 2 # mark phone screen as complete
+    #record['p01_cam_center_phone_screen_complete'] = 2 # mark phone screen as complete
+    record['cbp_email_screen_complete'] = 2 # mark email screen as complete
+    record['cbp_phone_screen_complete'] = 2 # mark phone screen as complete
 
     for reason in ineligible: # update failure reasons
         i = ineligibilityDict[reason]
@@ -342,9 +347,11 @@ def update_ps_hold(record, hold):
     record['admin_ra_exclude'] = 0 # mark admin panel as appropriate for research
     record['admin_panel_complete'] = 2 # mark admin panel as complete
 
-    record['cmtps_conductedby'] = 'Automatic screen program'
+    record['cmtps_conductedby'] = 'Automatic screen program 1'
     record['cmtps_eligstatus'] = 3 # mark phone screen as hold
-    record['p01_cam_center_phone_screen_complete'] = 2 # mark phone screen as complete
+    #record['p01_cam_center_phone_screen_complete'] = 2 # mark phone screen as complete
+    record['cbp_email_screen_complete'] = 2 # mark email screen as complete
+    record['cbp_phone_screen_complete'] = 2 # mark phone screen as complete
 
     if "Pain < 3 months" in hold:
         record['cmtps_holdreason___0'] = 1 
@@ -361,8 +368,13 @@ def update_ps_hold(record, hold):
     
 def update_ps_elig(record):
 
+    record['admin_relevantstudies___6'] = 1 # mark admin panel as considered for P01
+    record['admin_ra_exclude'] = 0 # mark admin panel as appropriate for research
     record['admin_panel_complete'] = 0 # mark admin panel as incomplete
-    record['p01_cam_center_phone_screen_complete'] = 0 # mark phone screen as incomplete
+    
+    record['admin_cbp_email_screen___1'] = 1 # mark as eligible for email screen
+    #record['p01_cam_center_phone_screen_complete'] = 0 # mark phone screen as incomplete
+    record['cbp_email_screen_complete'] = 0 # mark email screen as incomplete
 
     return record
     
