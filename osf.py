@@ -26,10 +26,10 @@ def main():
         recordsList = read_file(records_file)
         
         #api_url = 'https://redcap-demo.stanford.edu/api/'
-        #api_key = 'key here'
+        #api_key = 'key'
         
         api_url = 'https://redcap.stanford.edu/api/'
-        api_key = 'key here'
+        api_key = 'key'
         project = Project(api_url, api_key)
         records = export_record(project, recordsList)
         #print(record)
@@ -318,6 +318,7 @@ def update_ps_inelig(record, ineligible, ineligibilityDict, problem_meds):
 
     record['admin_relevantstudies___6'] = 1 # mark admin panel as considered for P01
     record['admin_ra_exclude'] = 0 # mark admin panel as appropriate for research
+    record['admin_cbp_email_screen'] = 0 # mark as ineligible for email screen
     record['admin_panel_complete'] = 2 # mark admin panel as complete
 
     #record['cmtps_date'] = str(datetime.datetime.now()) #raises error
@@ -345,6 +346,7 @@ def update_ps_hold(record, hold):
 
     record['admin_relevantstudies___6'] = 1 # mark admin panel as considered for P01
     record['admin_ra_exclude'] = 0 # mark admin panel as appropriate for research
+    record['admin_cbp_email_screen'] = 1 # mark as eligible for email screen
     record['admin_panel_complete'] = 2 # mark admin panel as complete
 
     record['cmtps_conductedby'] = 'Automatic screen program 1'
@@ -370,9 +372,9 @@ def update_ps_elig(record):
 
     record['admin_relevantstudies___6'] = 1 # mark admin panel as considered for P01
     record['admin_ra_exclude'] = 0 # mark admin panel as appropriate for research
+    record['admin_cbp_email_screen'] = 1 # mark as eligible for email screen
     record['admin_panel_complete'] = 0 # mark admin panel as incomplete
     
-    record['admin_cbp_email_screen___1'] = 1 # mark as eligible for email screen
     #record['p01_cam_center_phone_screen_complete'] = 0 # mark phone screen as incomplete
     record['cbp_email_screen_complete'] = 0 # mark email screen as incomplete
 
