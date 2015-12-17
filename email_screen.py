@@ -24,7 +24,7 @@ def main():
         recordsList = read_file(records_file)
         
         api_url = 'https://redcap.stanford.edu/api/'
-        api_key = 'your key here'
+        api_key = 'key'
         project = Project(api_url, api_key)
         records = export_record(project, recordsList)
         #print(record)
@@ -120,11 +120,14 @@ def p01(record, meds):
             print("height", height)
         else:
             #convert to inches
-            conversion = re.split(r'[\'"\s]\s*', record['cmtps_height'])
-            print("conversion", conversion)
-            feet = int(conversion[0])
-            inches = float(conversion[1])
-            height = (feet*12)+inches
+            conversion1 = re.sub(r'[^0-9]', ' ', record['cmtps_height'])
+            conversion2 = re.split(r'\s*', conversion1)
+            if conversion2[0].isdigit():
+                feet = int(conversion2[0])
+                inches = float(conversion2[1])
+                height = (feet*12)+inches
+            else: #height not entered correctly (e.g. only a space)
+                height = 100 #dummy value to ensure bmi is not exclusionary
         weight = int(record['cmtps_weight'])
         print("weight", weight)
         bmi = (weight/(height*height))*703
