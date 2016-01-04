@@ -26,13 +26,13 @@ def main():
         recordsList = read_file(records_file)
         
         #api_url = 'https://redcap-demo.stanford.edu/api/'
-        #api_key = 'key'
+        #api_key = 'key here'
         
         api_url = 'https://redcap.stanford.edu/api/'
-        api_key = 'key'
+        api_key = 'key here'
         project = Project(api_url, api_key)
         records = export_record(project, recordsList)
-        #print(record)
+        #print(records)
         #print("sorted", sorted(records[0].keys()))
         
         ineligibilityDict = read_to_dict(reasons_file)
@@ -99,7 +99,7 @@ def check_eligibility(records, ineligibilityDict, meds):
     
     for record in records:
         
-        #record = check_data(record)
+        new_phone, phone_changed = check_data(record)
         
         ineligible, hold, problem_meds = p01(record, meds)
         if ineligible != []:
@@ -118,37 +118,42 @@ def check_eligibility(records, ineligibilityDict, meds):
             newRecord = update_ps_elig(record)
             num_elig += 1
         
+        if phone_changed:
+            print("phone number changed:", new_phone)
+            newRecord['contact_phone'] = new_phone
+        
         newRecordList.append(newRecord)
     
     print("ineligible: ", num_inelig, "hold: ", num_hold, "eligible: ", num_elig)
     return newRecordList
 
-'''
+
 def check_data(record):
 
+    phone_changed = 0
+    new_phone = ''
     digits = len(record['contact_phone'])
     if digits > 10:
         if digits == 11 and record['contact_phone'][0] == '1':
             print("phone", record['contact_phone'])
             new_phone = record['contact_phone'][1:]
             print("new phone", new_phone)
-            record['contact_phone'] = new_phone
         else:
             print("phone", record['contact_phone'])
             new_phone = record['contact_phone'][-10:]
             print("new phone", new_phone)
-            record['contact_phone'] = new_phone
-    elif digits < 10:
+        phone_changed = 1
+    elif (digits < 10 and digits > 0):
         print("phone", record['contact_phone'])
         padding = ''
         for i in range(0,10-digits):
             padding += '0'
         new_phone = record['contact_phone'] + padding
         print("new phone", new_phone)
-        record['contact_phone'] = new_phone
+        phone_changed = 1
     
-    return record
-'''
+    return new_phone, phone_changed
+
 
 def p01(record, meds):
 
