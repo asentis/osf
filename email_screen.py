@@ -35,7 +35,7 @@ def main():
 
         newRecords = check_eligibility(records, ineligibilityDict, medDict)
         #print("sorted newRecords", sorted(newRecords[0].keys()))
-        import_record(newRecords, project)
+        #import_record(newRecords, project)
 
     else:
         #filename = ''
@@ -115,19 +115,54 @@ def p01(record, meds):
     
     # calculate BMI
     if record['cmtps_height'] != '' and record['cmtps_weight'] != '':
+        print("raw height", record['cmtps_height'])
+        try: #convert to int
+            height = int(record['cmtps_height'])
+            print("int cast", height)
+        except ValueError:
+            try: # convert to float
+                height = float(record['cmtps_height'])
+                print("float cast", height)
+            except ValueError:
+                conversion1 = re.sub(r'[^0-9]', ' ', record['cmtps_height'])
+                print("conversion1", conversion1)
+                conversion2 = re.split(r'\s*', conversion1)
+                print("conversion2", conversion2)
+                if conversion2[0].isdigit():
+                    feet = int(conversion2[0])
+                    inches = float(conversion2[1])
+                    height = (feet*12)+inches
+                else: #height not entered correctly (e.g. only a space)
+                    height = 100 #dummy value to ensure bmi is not exclusionary
+        
+        
+        
+        '''
         if record['cmtps_height'].isdigit(): #height in inches
             height = int(record['cmtps_height'])
-            print("height", height)
+            #print("height", height)
+        elif record['cmtps_height'][-1] == ' ':
+            #print("space at end")
+            height = int(record['cmtps_height'][:-1])
+            #print("new height", height)
         else:
             #convert to inches
             conversion1 = re.sub(r'[^0-9]', ' ', record['cmtps_height'])
+            print("conversion1", conversion1)
             conversion2 = re.split(r'\s*', conversion1)
+            print("conversion2", conversion2)
             if conversion2[0].isdigit():
                 feet = int(conversion2[0])
                 inches = float(conversion2[1])
                 height = (feet*12)+inches
             else: #height not entered correctly (e.g. only a space)
                 height = 100 #dummy value to ensure bmi is not exclusionary
+        '''
+        
+        
+        
+        
+        
         weight = int(record['cmtps_weight'])
         print("weight", weight)
         bmi = (weight/(height*height))*703
